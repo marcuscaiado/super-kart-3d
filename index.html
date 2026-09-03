@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Mario Kart 3D - Grand Prix Arcade Engine</title>
+  <meta name="description" content="Playable Mario Kart 3D racing game with Mario, Luigi, Peach, Bowser, coins, drifting, homing red shells, and Mario Circuit." />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;800;900&family=Rajdhani:wght@600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="./style.css" />
+</head>
+<body>
+  <div id="game-container"></div>
+
+  <!-- Speed Lines FX Overlay on Boost -->
+  <div id="hud-speed-lines" class="speed-lines-overlay"></div>
+
+  <!-- HUD Interface Layer -->
+  <div id="hud-root">
+    <!-- Top-Left: Position Badge -->
+    <div class="hud-box hud-position">
+      <div class="hud-pos-label">POS</div>
+      <div class="hud-pos-value">
+        <span id="hud-pos">1</span><span id="hud-pos-suffix">ST</span>
+      </div>
+      <div class="hud-pos-total">/ 4</div>
+    </div>
+
+    <!-- Top-Center: Lap Counter & Timer -->
+    <div class="hud-box hud-center-cluster">
+      <div class="hud-lap-container">
+        <span class="lap-label">LAP</span>
+        <span id="hud-lap" class="lap-value">1 / 3</span>
+      </div>
+      <div class="hud-timer-container">
+        <div class="timer-row">
+          <span class="timer-label">TIME</span>
+          <span id="hud-time" class="timer-value">00:00.000</span>
+        </div>
+        <div class="timer-row best-row">
+          <span class="timer-label">BEST</span>
+          <span id="hud-best-lap" class="timer-value">--:--.---</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Top-Right: Coins, Item Slot, and Mute Toggle -->
+    <div class="hud-top-right">
+      <!-- Coin Counter -->
+      <div class="hud-coins-box hud-box">
+        <span class="coin-icon">🪙</span>
+        <span id="hud-coins-val" class="coin-count">0 / 10</span>
+      </div>
+
+      <!-- Item Slot -->
+      <div id="hud-item-slot" class="hud-item-box">
+        <div class="item-slot-glow"></div>
+        <div id="hud-item-icon" class="item-icon">EMPTY</div>
+        <div id="hud-item-hint" class="item-hint">HIT [?] BOX</div>
+      </div>
+
+      <button id="hud-mute-btn" class="hud-icon-btn interactive-btn" title="Toggle Sound / Music (M)">🔊</button>
+    </div>
+
+    <!-- Bottom-Left: Mini-Map Radar -->
+    <div class="hud-bottom-left">
+      <div class="radar-wrapper">
+        <div class="radar-label">MARIO CIRCUIT RADAR</div>
+        <canvas id="hud-radar-canvas" width="165" height="165"></canvas>
+      </div>
+    </div>
+
+    <!-- Bottom-Right: Speedometer & 3-Stage Drift Mini-Turbo -->
+    <div class="hud-bottom-right">
+      <div class="speedometer-box">
+        <div class="speed-digital">
+          <span id="hud-speed-val" class="speed-num">0</span>
+          <span class="speed-unit">KM/H</span>
+        </div>
+        <div class="speed-bar-bg">
+          <div id="hud-speed-bar" class="speed-bar-fill"></div>
+        </div>
+        <div class="drift-gauge-wrapper">
+          <div class="drift-gauge-label">DRIFT MINI-TURBO (BLUE → ORANGE → PURPLE)</div>
+          <div class="drift-gauge-bg">
+            <div id="hud-drift-bar" class="drift-gauge-bar"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Center Announcements -->
+    <div id="hud-countdown" class="countdown-pop">3</div>
+    <div id="hud-final-lap-banner" class="final-lap-banner">⚡ FINAL LAP! ⚡</div>
+
+    <!-- Touch Controls for Mobile/Tablet -->
+    <div id="hud-touch-controls" class="touch-controls-container">
+      <div class="touch-left-cluster">
+        <button id="btn-left" class="touch-btn steer-btn">◀</button>
+        <button id="btn-right" class="touch-btn steer-btn">▶</button>
+      </div>
+      <div class="touch-right-cluster">
+        <button id="btn-item" class="touch-btn item-btn">ITEM</button>
+        <button id="btn-drift" class="touch-btn drift-btn">HOP/DRIFT</button>
+        <button id="btn-brake" class="touch-btn brake-btn">BRAKE</button>
+        <button id="btn-gas" class="touch-btn gas-btn">GAS</button>
+      </div>
+    </div>
+
+    <!-- Controls Helper Banner -->
+    <div id="hud-controls-hint" class="controls-hint">
+      <span><b>[W / ↑]</b> Gas</span>
+      <span><b>[S / ↓]</b> Brake</span>
+      <span><b>[A / D]</b> Steer</span>
+      <span><b>[SPACE / SHIFT]</b> Hop & Drift</span>
+      <span><b>[E / CLICK]</b> Use Item</span>
+    </div>
+  </div>
+
+  <!-- Victory Podium Modal -->
+  <div id="hud-victory-modal" class="victory-modal-overlay">
+    <div class="victory-card">
+      <div class="victory-header">
+        <h1 id="hud-victory-rank" class="podium-rank">🏆 1ST PLACE - MARIO CHAMPION!</h1>
+        <p class="victory-subtitle">MARIO KART GRAND PRIX RESULTS</p>
+      </div>
+
+      <div class="standings-table-header">
+        <span>POS</span>
+        <span>RACER</span>
+        <span>COINS</span>
+        <span>BEST LAP</span>
+        <span>TOTAL TIME</span>
+      </div>
+
+      <div id="hud-victory-table" class="standings-table"></div>
+
+      <div class="victory-actions">
+        <button id="hud-restart-btn" class="arcade-btn interactive-btn">PLAY AGAIN (R)</button>
+      </div>
+    </div>
+  </div>
+
+  <script type="module" src="./src/main.js"></script>
+</body>
+</html>
