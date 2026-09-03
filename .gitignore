@@ -3,3 +3,4 @@ dist/
 .DS_Store
 *.log
 test-kart-gameplay.cjs
+deploy-gh-pages.ps1
